@@ -1,0 +1,18 @@
+---
+# tasks file for dependencies
+- name: install dependencies
+  shell: "docker exec {{ item.name }} pip install flask flask-mysql mysql-connector-python" 
+  loop: "{{ docker_container_details }}"
+
+- name: create the app.py file
+  template:
+    src: app.j2
+    dest: app.py
+
+- name: install dependencies
+  shell: "docker cp app.py {{ item.name }}:/opt/simple-webapp" 
+  loop: "{{ docker_container_details }}"
+
+- name: Start Web Server
+  shell: docker exec -d {{ item.name }} python /opt/simple-webapp/app.py
+  loop: "{{ docker_container_details }}"

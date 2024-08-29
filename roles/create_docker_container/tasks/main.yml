@@ -1,0 +1,72 @@
+---
+# tasks file for create_docker_container
+# - name: Ensure Docker is installed
+#   package:
+#     name: docker
+#     state: present
+
+- name: Ensure Docker Python module is installed
+  pip:
+    name: docker
+
+- name: Create a custom Docker network
+  docker_network:
+    name: "{{ docker_network_name }}"
+    driver: bridge
+
+- name: Create MySQL database container
+  docker_container:
+    name: "{{ dbcontianer_name }}"
+    image: mysql:8.0
+    networks:
+      - name: "{{ docker_network_name }}"
+    state: started
+    env:
+      MYSQL_DATABASE: "{{ mysql_database_name }}"
+      MYSQL_USER: "{{ mysql_user_name }}"
+      MYSQL_PASSWORD: "{{ mysql_pass_name }}"
+      MYSQL_ROOT_PASSWORD: "{{ mysql_ruser_pass_name }}"
+    published_ports:
+      - "3306:3306"
+
+- name: Create Docker container
+  docker_container:
+    name: "{{ item.name }}"
+    image: python:3.9-slim
+    networks:
+      - name: "{{ docker_network_name }}"
+    exposed_ports:
+      - "{{ item.port }}"
+    state: started
+    command: sleep infinity
+  loop: "{{ docker_container_details }}"
+
+- name: Get IP address of container1
+  docker_container_info:
+      name: "{{ dbcontianer_name }}"
+  register: dbcontainer_info
+
+- set_fact:
+    db_contianer_ip: "{{ dbcontainer_info.container.NetworkSettings.IPAddress }}"
+
+- name: Get IP address of container1
+  docker_container_info:
+      name: "{{ item.name }}"
+  register: container_info
+  loop: "{{ docker_container_details }}"
+
+- set_fact:
+    container_ip_details: "{{  container_ip_details | default([]) + ['{{ container_info.results[indx].container.NetworkSettings.IPAddress }}'] }}"
+  loop: "{{ docker_container_details }}"
+  loop_control:
+    index_var: indx
+
+- debug: 
+    var: container_ip_details
+
+- add_host:
+    name: g_vars
+    database_ip: "{{ db_contianer_ip }}"
+  when: db_contianer_ip is defiend and db_contianer_ip != ''
+
+   

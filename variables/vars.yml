@@ -1,0 +1,15 @@
+docker_network_name: 'my_docker_network'
+docker_container_details:
+  - name: web_container1
+    port: 5000
+  - name: web_container2
+    port: 5000
+  - name: web_container3
+    port: 5000
+
+# database vars
+dbcontianer_name: web_container_db
+mysql_database_name: 'web_database'
+mysql_user_name: 'mysql_user'
+mysql_pass_name: 'paSSw0rD'
+mysql_ruser_pass_name: 'paSSw0rD'

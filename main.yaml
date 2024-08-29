@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  vars_files:
+    - variables/vars.yml
+  become: true
+  roles:
+    - create_docker_container
+    - dependencies
+    # - deploy_web_app
+    
